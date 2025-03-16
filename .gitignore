@@ -1,0 +1,25 @@
+# Ignore build outputs
+bin/
+obj/
+
+# Ignore dependencies
+*.dll
+*.exe
+*.pdb
+*.so
+*.dylib
+*.pyc
+*.class
+*.csproj.user
+*.csproj.BuildWithSkipAnalyzers
+
+# Ignore IDE config files
+.vscode/
+.vs/
+.idea/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+[Dd]ebug/
+[Rr]elease/
