@@ -5,6 +5,14 @@ VisualStudioVersion = 17.10.35027.167
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UserService.API", "UserService.API\UserService.API.csproj", "{F5CE5AA3-984E-4679-97A5-E7C4A46187BA}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{4F14EA03-C66E-4763-9FDD-7457C19E1266}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{D5337FDB-90A7-4810-8DAB-4062889BC5D3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UserService.Core", "UserService.Core\UserService.Core.csproj", "{4CBE9318-FC11-432D-8E8F-407755F0EFA9}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UserService.Infrastructure", "UserService.Infrastructure\UserService.Infrastructure.csproj", "{9CE93BDD-A2A4-47D8-BBD1-D0856E2C277F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,9 +23,22 @@ Global
 		{F5CE5AA3-984E-4679-97A5-E7C4A46187BA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F5CE5AA3-984E-4679-97A5-E7C4A46187BA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F5CE5AA3-984E-4679-97A5-E7C4A46187BA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4CBE9318-FC11-432D-8E8F-407755F0EFA9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4CBE9318-FC11-432D-8E8F-407755F0EFA9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4CBE9318-FC11-432D-8E8F-407755F0EFA9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4CBE9318-FC11-432D-8E8F-407755F0EFA9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9CE93BDD-A2A4-47D8-BBD1-D0856E2C277F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9CE93BDD-A2A4-47D8-BBD1-D0856E2C277F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9CE93BDD-A2A4-47D8-BBD1-D0856E2C277F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9CE93BDD-A2A4-47D8-BBD1-D0856E2C277F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{F5CE5AA3-984E-4679-97A5-E7C4A46187BA} = {4F14EA03-C66E-4763-9FDD-7457C19E1266}
+		{4CBE9318-FC11-432D-8E8F-407755F0EFA9} = {4F14EA03-C66E-4763-9FDD-7457C19E1266}
+		{9CE93BDD-A2A4-47D8-BBD1-D0856E2C277F} = {4F14EA03-C66E-4763-9FDD-7457C19E1266}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {A4AE8B33-41CC-45A6-8F0E-7E1935E2E7E2}

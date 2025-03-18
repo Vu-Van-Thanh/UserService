@@ -1,0 +1,11 @@
+[
+    {
+        "UserName": "admin",
+        "Email": "admin@example.com",
+        "FullName": "Administrator",
+        "AvatarUrl": "",
+        "IsActive": true,
+        "Password": "Admin@123",
+        "Role": "Admin"
+    }
+]
