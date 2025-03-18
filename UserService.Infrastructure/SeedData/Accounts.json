@@ -1,11 +1,12 @@
 [
-    {
-        "UserName": "admin",
-        "Email": "admin@example.com",
-        "FullName": "Administrator",
-        "AvatarUrl": "",
-        "IsActive": true,
-        "Password": "Admin@123",
-        "Role": "Admin"
-    }
+  {
+    "Id": "6F9DFDCC-E32E-43FB-B914-91619C3D010E",
+    "UserName": "admin",
+    "Email": "admin@example.com",
+    "FullName": "Administrator",
+    "AvatarUrl": "",
+    "IsActive": true,
+    "Password": "Admin@123",
+    "Role": "Admin"
+  }
 ]

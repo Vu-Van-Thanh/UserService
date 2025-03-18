@@ -1,14 +1,14 @@
 [
-    {
-        "Id": "11111111-1111-1111-1111-111111111111",
-        "Name": "Admin",
-        "NormalizedName": "ADMIN",
-        "Description": "Quản trị viên"
-    },
-    {
-        "Id": "22222222-2222-2222-2222-222222222222",
-        "Name": "User",
-        "NormalizedName": "USER",
-        "Description": "Người dùng thông thường"
-    }
+  {
+    "Id": "B782A1E0-8C64-4BB3-B359-9A3609D9743D",
+    "Name": "Admin",
+    "NormalizedName": "ADMIN",
+    "Description": "Quản trị viên"
+  },
+  {
+    "Id": "DE0EF619-3E3B-42F0-AF49-7C657B36D767",
+    "Name": "User",
+    "NormalizedName": "USER",
+    "Description": "Người dùng thông thường"
+  }
 ]

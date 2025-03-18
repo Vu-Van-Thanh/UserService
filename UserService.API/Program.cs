@@ -11,6 +11,13 @@ var builder = WebApplication.CreateBuilder(args);
 
 
 SerilogConfig.ConfigureLogging(builder.Configuration);
+// Thêm Serilog vào Dependency Injection (DI) container
+builder.Host.UseSerilog((context, services, configuration) =>
+{
+    configuration.ReadFrom.Configuration(context.Configuration)
+                 .ReadFrom.Services(services);
+});
+
 builder.Services.ConfigureServices(builder.Configuration);
 
 builder.Services.AddControllers();
@@ -22,7 +29,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI(c =>
     {
         c.SwaggerEndpoint("/swagger/v1/swagger.json", "User Service API v1");
-        c.RoutePrefix = string.Empty; 
+        c.RoutePrefix = "swagger"; 
     });
 }
 

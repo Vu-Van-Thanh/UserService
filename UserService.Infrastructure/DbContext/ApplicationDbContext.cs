@@ -46,20 +46,33 @@ namespace UserService.Infrastructure.DbContext
             // Seed Roles
             var roles = LoadSeedData<ApplicationRole>("SeedData/Roles.json");
             builder.Entity<ApplicationRole>().HasData(roles);
-            // Seed Account
-            var accounts = LoadSeedData<ApplicationRole>("SeedData/Accounts.json");
-            builder.Entity<ApplicationRole>().HasData(accounts);
+            
 
         }
 
         private static List<T> LoadSeedData<T>(string filePath)
         {
-            var fullPath = Path.Combine(Directory.GetCurrentDirectory(), "UserService.Infrastructure", filePath);
+            string baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
+            string projectRoot = Directory.GetParent(baseDirectory).Parent.Parent.Parent.Parent.FullName;
+            string fullPath = Path.Combine(projectRoot, "UserService.Infrastructure", filePath);
+
+
             if (!File.Exists(fullPath))
                 throw new FileNotFoundException($"Không tìm thấy file seed data: {fullPath}");
 
             var jsonData = File.ReadAllText(fullPath);
-            return JsonSerializer.Deserialize<List<T>>(jsonData) ?? new List<T>();
+            var items = JsonSerializer.Deserialize<List<T>>(jsonData) ?? new List<T>();
+
+            if (typeof(T) == typeof(ApplicationRole))
+            {
+                foreach (var item in items.Cast<ApplicationRole>())
+                {
+                    item.Id = Guid.Parse(item.Id.ToString());
+                }
+            }
+
+            return items;
         }
+
     }
 }
