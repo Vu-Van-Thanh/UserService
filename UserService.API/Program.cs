@@ -43,4 +43,6 @@ app.UseAuthorization();
 
 app.MapControllers();
 
+var kafkaConsumerService = app.Services.GetRequiredService<KafkaConsumerService>();
+Task.Run(() => kafkaConsumerService.StartConsumerAsync());
 app.Run();

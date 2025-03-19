@@ -25,6 +25,7 @@ namespace UserServiceRegistry
 
             // thêm services
             services.AddScoped<ITokenService, TokenService>();
+            services.AddSingleton<KafkaConsumerService>();
             //Enable Identity in this project
             services.AddIdentity<ApplicationUser, ApplicationRole>(options =>
             {
