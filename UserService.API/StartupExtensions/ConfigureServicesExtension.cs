@@ -7,6 +7,7 @@ using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using UserService.Core.Services;
 
 namespace UserServiceRegistry
 {
@@ -22,6 +23,8 @@ namespace UserServiceRegistry
             });
 
 
+            // thêm services
+            services.AddScoped<ITokenService, TokenService>();
             //Enable Identity in this project
             services.AddIdentity<ApplicationUser, ApplicationRole>(options =>
             {
