@@ -51,7 +51,7 @@ namespace UserService.API.Controllers
             if (!result.Succeeded)
                 return BadRequest(result.Errors);
 
-            await _userManager.AddToRoleAsync(user, "User");
+            await _userManager.AddToRoleAsync(user, model.Role);
 
             var token = GenerateJwtToken(user);
             return Ok(new { access_token = token, refresh_token = user.RefreshToken });
