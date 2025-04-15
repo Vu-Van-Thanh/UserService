@@ -80,6 +80,10 @@ namespace UserServiceRegistry
                         Url = new Uri("https://example.com")
                     }
                 });
+                options.AddServer(new OpenApiServer
+                {
+                    Url = "https://localhost:7198"
+                });
                 // Thêm cấu hình JWT vào Swagger
                 options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
                 {

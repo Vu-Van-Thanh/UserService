@@ -63,7 +63,6 @@ namespace UserService.API.Controllers
         [HttpPost("login")] // POST /api/auth/login
         public async Task<IActionResult> Login([FromBody] LoginRequest model)
         {
-            return Ok(new { accessToken = "dsađá", refresh_token = "đasds" , isSuccess = true});
             var user = await _userManager.FindByEmailAsync(model.Email);
             if (user == null || !await _userManager.CheckPasswordAsync(user, model.Password))
                 return Unauthorized("Invalid credentials");
@@ -73,7 +72,7 @@ namespace UserService.API.Controllers
             await _userManager.UpdateAsync(user);
 
             var token = _tokenService.GenerateJwtToken(user);
-            return Ok(new { accessToken = token, refresh_token = user.RefreshToken });
+            return Ok(new { accessToken = token, refresh_token = user.RefreshToken,isSuccess=true });
         }
 
         [HttpPost("tokens")] // POST /api/auth/tokens
