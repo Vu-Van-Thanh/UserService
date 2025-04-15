@@ -35,9 +35,8 @@ if (app.Environment.IsDevelopment())
 
 /*app.UseSerilogLoggingMiddleware();
 app.UseSerilogRequestLogging();*/
-
+app.UseCors("MyCorsPolicy");
 app.UseHttpsRedirection();
-
 app.UseAuthentication();
 app.UseAuthorization();
 

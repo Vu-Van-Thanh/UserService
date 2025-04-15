@@ -106,6 +106,19 @@ namespace UserServiceRegistry
                 });
             });
 
+            var allowedOrigins = configuration.GetSection("Cors:AllowedOrigins").Get<string[]>();
+
+            services.AddCors(options =>
+            {
+                options.AddPolicy("MyCorsPolicy", builder =>
+                {
+                    builder.WithOrigins(allowedOrigins)
+                           .AllowAnyHeader()
+                           .AllowAnyMethod()
+                           .AllowCredentials();
+                });
+            });
+
             return services;
         }
     }
