@@ -10,13 +10,13 @@ using UserService.API.Middlewares;
 var builder = WebApplication.CreateBuilder(args);
 
 
-SerilogConfig.ConfigureLogging(builder.Configuration);
+//SerilogConfig.ConfigureLogging(builder.Configuration);
 // Thêm Serilog vào Dependency Injection (DI) container
-builder.Host.UseSerilog((context, services, configuration) =>
+/*builder.Host.UseSerilog((context, services, configuration) =>
 {
     configuration.ReadFrom.Configuration(context.Configuration)
                  .ReadFrom.Services(services);
-});
+});*/
 
 builder.Services.ConfigureServices(builder.Configuration);
 
@@ -33,8 +33,8 @@ if (app.Environment.IsDevelopment())
     });
 }
 
-app.UseSerilogLoggingMiddleware();
-app.UseSerilogRequestLogging();
+/*app.UseSerilogLoggingMiddleware();
+app.UseSerilogRequestLogging();*/
 
 app.UseHttpsRedirection();
 
@@ -43,6 +43,4 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-var kafkaConsumerService = app.Services.GetRequiredService<KafkaConsumerService>();
-Task.Run(() => kafkaConsumerService.StartConsumerAsync());
 app.Run();

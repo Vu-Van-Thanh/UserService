@@ -17,7 +17,7 @@ using UserService.Core.Services;
 
 namespace UserService.API.Controllers
 {
-    [Route("api/auth")]
+    [Route("api/[controller]")]
     [ApiController]
     public class AuthController : ControllerBase
     {
@@ -57,12 +57,13 @@ namespace UserService.API.Controllers
             await _userManager.AddToRoleAsync(user, model.Role);
 
             var token = _tokenService.GenerateJwtToken(user);
-            return Ok(new { access_token = token, refresh_token = user.RefreshToken });
+            return Ok(new { accessToken = token, refresh_token = user.RefreshToken });
         }
 
         [HttpPost("login")] // POST /api/auth/login
         public async Task<IActionResult> Login([FromBody] LoginRequest model)
         {
+            return Ok(new { accessToken = "dsađá", refresh_token = "đasds" });
             var user = await _userManager.FindByEmailAsync(model.Email);
             if (user == null || !await _userManager.CheckPasswordAsync(user, model.Password))
                 return Unauthorized("Invalid credentials");
@@ -72,7 +73,7 @@ namespace UserService.API.Controllers
             await _userManager.UpdateAsync(user);
 
             var token = _tokenService.GenerateJwtToken(user);
-            return Ok(new { access_token = token, refresh_token = user.RefreshToken });
+            return Ok(new { accessToken = token, refresh_token = user.RefreshToken });
         }
 
         [HttpPost("tokens")] // POST /api/auth/tokens
@@ -98,7 +99,7 @@ namespace UserService.API.Controllers
 
             return Ok(new
             {
-                access_token = newAccessToken,
+                accessToken = newAccessToken,
                 refresh_token = newRefreshToken
             });
         }
@@ -132,7 +133,7 @@ namespace UserService.API.Controllers
 
             return Ok(new
             {
-                access_token = newAccessToken,
+                accessToken = newAccessToken,
                 refresh_token = user.RefreshToken,
                 message = "Password changed successfully"
             });
