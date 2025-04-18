@@ -43,8 +43,7 @@ var registration = new AgentServiceRegistration()
     }
 };
 
-// Đăng ký khi app start
-await consulClient.Agent.ServiceRegister(registration);
+//await consulClient.Agent.ServiceRegister(registration);
 
 // Hủy đăng ký khi app stop
 lifetime.ApplicationStopping.Register(() =>

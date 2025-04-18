@@ -70,9 +70,18 @@ namespace UserService.API.Controllers
             user.RefreshToken = _tokenService.GenerateRefreshToken();
             user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7);
             await _userManager.UpdateAsync(user);
-
+            var roles = await _userManager.GetRolesAsync(user);
             var token = _tokenService.GenerateJwtToken(user);
-            return Ok(new { accessToken = token, refresh_token = user.RefreshToken,isSuccess=true });
+            return Ok(new { accessToken = token, refresh_token = user.RefreshToken,isSuccess=true,
+                user = new
+                {
+                    id = user.Id,
+                    email = user.Email,
+                    roles = roles,
+                    FullName = user.FullName,
+                    avartar = user.AvatarUrl
+                }
+            });
         }
 
         [HttpPost("tokens")] // POST /api/auth/tokens
