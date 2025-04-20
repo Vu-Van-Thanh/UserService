@@ -1,6 +1,7 @@
 ﻿using UserServiceRegistry;
 using Consul;
 using UserService.API.StartupExtensions;
+using UserService.API.Middlewares;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -22,6 +23,8 @@ builder.Services.AddSingleton<IConsulClient, ConsulClient>(p => new ConsulClient
 }));
 
 var app = builder.Build();
+//app.UseMiddleware<TokenProcessingMiddleware>();
+
 //đăng kí consul
 var lifetime = app.Lifetime;
 var consulClient = app.Services.GetRequiredService<IConsulClient>();
@@ -63,7 +66,31 @@ if (app.Environment.IsDevelopment())
 app.UseCors("AllowAll");
 app.UseHttpsRedirection();
 app.UseRouting();              // ✅ Phân tích route từ URL
+// Debug middleware để log request và header
+app.Use(async (context, next) =>
+{
+    Console.WriteLine("📥 Incoming request:");
+    Console.WriteLine($"➡️ Path: {context.Request.Path}");
+    Console.WriteLine("🔑 Headers:");
+
+    foreach (var header in context.Request.Headers)
+    {
+        Console.WriteLine($"{header.Key}: {header.Value}");
+    }
+
+    Console.WriteLine($"🧪 User authenticated: {context.User.Identity?.IsAuthenticated}");
+
+    await next(); // Đừng quên gọi middleware tiếp theo
+});
 app.UseAuthentication();      // ✅ Kiểm tra token (JWT)
+app.Use(async (context, next) =>
+{
+    var user = context.User;
+    Console.WriteLine($"👤 Authenticated User: {user?.Identity?.Name}");
+    Console.WriteLine($"✅ IsAuthenticated: {user?.Identity?.IsAuthenticated}");
+
+    await next();
+});
 app.UseAuthorization();       // ✅ Áp chính sách [Authorize]
 app.MapControllers();
 

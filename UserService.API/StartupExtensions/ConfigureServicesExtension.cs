@@ -40,39 +40,82 @@ namespace UserServiceRegistry
 
             // 3. Cấu hình JWT Authentication
             var jwtSettings = configuration.GetSection("JwtSettings");
-            var secretKey = Encoding.UTF8.GetBytes(configuration["JwtSettings:Secret"]);
+            //var secretKey = Encoding.UTF8.GetBytes(configuration["JwtSettings:Secret"]);
+            var secretKey = Encoding.UTF8.GetBytes("VUVANTHANH2K3_DOANTOTNGHIEP_2025");
 
-            services.AddAuthentication(options =>
-            {
-                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-                options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
-            })
+            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             .AddJwtBearer(options =>
             {
                 options.RequireHttpsMetadata = false;
                 options.SaveToken = true;
                 options.TokenValidationParameters = new TokenValidationParameters
                 {
-                    ValidIssuer = jwtSettings["Issuer"],
-                    ValidAudience = jwtSettings["Audience"],
+                    //ValidIssuer = jwtSettings["Issuer"],
+                    ValidIssuer= "https://localhost:7198/",
+                    //ValidAudience = jwtSettings["Audience"],
+                    ValidAudience= "https://localhost:7198/",
                     ValidateIssuer = true,
                     ValidateAudience = true,
                     ValidateLifetime = true,
                     ValidateIssuerSigningKey = true,
                     IssuerSigningKey = new SymmetricSecurityKey(secretKey)
                 };
-               /* options.Events = new JwtBearerEvents
+                /* options.Events = new JwtBearerEvents
+                 {
+                     OnChallenge = context =>
+                     {
+                         context.HandleResponse();
+                         context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                         context.Response.ContentType = "application/json";
+                         var result = System.Text.Json.JsonSerializer.Serialize(new { message = "Unauthorized" });
+                         return context.Response.WriteAsync(result);
+                     }
+                 };*/
+                options.Events = new JwtBearerEvents
                 {
-                    OnChallenge = context =>
+                   
+                    OnMessageReceived = context =>
                     {
-                        context.HandleResponse();
-                        context.Response.StatusCode = StatusCodes.Status401Unauthorized;
-                        context.Response.ContentType = "application/json";
-                        var result = System.Text.Json.JsonSerializer.Serialize(new { message = "Unauthorized" });
-                        return context.Response.WriteAsync(result);
+                        var authHeader = context.Request.Headers["Authorization"].FirstOrDefault();
+                       
+                        Console.WriteLine($"🧪 Raw token: {authHeader}");
+                        return Task.CompletedTask;
+                    },
+                    OnAuthenticationFailed = context =>
+                    {
+                        var ex = context.Exception;
+                        
+
+                        if (ex is SecurityTokenExpiredException expiredException)
+                        {
+                            Console.WriteLine("⚠️ Token expired at: " + expiredException.Expires);
+                        }
+                        else if (ex is SecurityTokenInvalidIssuerException)
+                        {
+                            Console.WriteLine("⚠️ Invalid Issuer!");
+                        }
+                        else if (ex is SecurityTokenInvalidAudienceException)
+                        {
+                            Console.WriteLine("⚠️ Invalid Audience!");
+                        }
+                        else if (ex is SecurityTokenInvalidSignatureException)
+                        {
+                            Console.WriteLine("⚠️ Invalid Signature!");
+                        }
+                        else
+                        {
+                            Console.WriteLine("❌ Token authentication failed!");
+                            Console.WriteLine($"Message: {ex.Message}");
+                        }
+                        return Task.CompletedTask;
+                    },
+                    OnTokenValidated = context =>
+                    {
+                        // Log khi token hợp lệ và đã được xác thực thành công
+                        Console.WriteLine("✅ Token validated successfully");
+                        return Task.CompletedTask;
                     }
-                };*/
+                };
             });
 
             // 4. Cấu hình CORS
@@ -87,7 +130,7 @@ namespace UserServiceRegistry
             });
 
             // 5. Cấu hình Authorization
-            services.AddAuthorization();
+            //services.AddAuthorization();
 
             // 6. Cấu hình Swagger
             services.AddEndpointsApiExplorer();

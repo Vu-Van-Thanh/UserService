@@ -43,7 +43,7 @@ namespace UserService.Core.Services
             var roleClaims = string.Join(",", roles);
             claims.Add(new Claim(ClaimTypes.Role, roleClaims));
 
-            var token = new JwtSecurityToken(
+            var token = new System.IdentityModel.Tokens.Jwt.JwtSecurityToken(
                 issuer: _configuration["JwtSettings:Issuer"],
                 audience: _configuration["JwtSettings:Audience"],
                 claims: claims,

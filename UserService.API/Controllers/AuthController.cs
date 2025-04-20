@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -14,7 +15,7 @@ namespace UserService.API.Controllers
 {
     [Route("[controller]")]
     [ApiController]
-    [Authorize]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public class AuthController : ControllerBase
     {
         private readonly UserManager<ApplicationUser> _userManager;
@@ -124,8 +125,8 @@ namespace UserService.API.Controllers
                     ValidateAudience = true,
                     ValidateLifetime = true,
                     ValidateIssuerSigningKey = true,
-                    ValidIssuer = "UserService",
-                    ValidAudience = "HRM_User",
+                    ValidIssuer = "https://localhost:7198/",
+                    ValidAudience = "https://localhost:7198/",
                     IssuerSigningKey = new SymmetricSecurityKey(key)
                 };
 
