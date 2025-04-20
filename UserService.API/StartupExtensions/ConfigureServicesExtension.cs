@@ -15,17 +15,15 @@ namespace UserServiceRegistry
     {
         public static IServiceCollection ConfigureServices(this IServiceCollection services, IConfiguration configuration)
         {
-
-
+            // 1. Cấu hình DbContext
             services.AddDbContext<ApplicationDbContext>(options =>
             {
                 options.UseSqlServer(configuration.GetConnectionString("DefaultConnection"));
             });
 
 
-            // thêm services
+            // 2. Cấu hình Identity
             services.AddScoped<ITokenService, TokenService>();
-            //Enable Identity in this project
             services.AddIdentity<ApplicationUser, ApplicationRole>(options =>
             {
                 options.Password.RequiredLength = 6;
@@ -35,36 +33,63 @@ namespace UserServiceRegistry
                 options.Password.RequireDigit = true;
                 options.Password.RequiredUniqueChars = 3;
             })
-             .AddEntityFrameworkStores<ApplicationDbContext>()
+            .AddEntityFrameworkStores<ApplicationDbContext>()
+            .AddDefaultTokenProviders()
+            .AddUserStore<UserStore<ApplicationUser, ApplicationRole, ApplicationDbContext, Guid>>()
+            .AddRoleStore<RoleStore<ApplicationRole, ApplicationDbContext, Guid>>();
 
-             .AddDefaultTokenProviders()
-
-             .AddUserStore<UserStore<ApplicationUser, ApplicationRole, ApplicationDbContext, Guid>>()
-
-             .AddRoleStore<RoleStore<ApplicationRole, ApplicationDbContext, Guid>>();
-
-           
-            // Cấu hình JWT
+            // 3. Cấu hình JWT Authentication
             var jwtSettings = configuration.GetSection("JwtSettings");
-            var secretKey = Encoding.UTF8.GetBytes(jwtSettings["Secret"]);
+            var secretKey = Encoding.UTF8.GetBytes(configuration["JwtSettings:Secret"]);
 
-            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-                .AddJwtBearer(options =>
+            services.AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+            })
+            .AddJwtBearer(options =>
+            {
+                options.RequireHttpsMetadata = false;
+                options.SaveToken = true;
+                options.TokenValidationParameters = new TokenValidationParameters
                 {
-                    options.TokenValidationParameters = new TokenValidationParameters
+                    ValidIssuer = jwtSettings["Issuer"],
+                    ValidAudience = jwtSettings["Audience"],
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidateLifetime = true,
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = new SymmetricSecurityKey(secretKey)
+                };
+               /* options.Events = new JwtBearerEvents
+                {
+                    OnChallenge = context =>
                     {
-                        ValidateIssuer = true,
-                        ValidateAudience = true,
-                        ValidateLifetime = true,
-                        ValidateIssuerSigningKey = true,
-                        ValidIssuer = jwtSettings["Issuer"],
-                        ValidAudience = jwtSettings["Audience"],
-                        IssuerSigningKey = new SymmetricSecurityKey(secretKey)
-                    };
+                        context.HandleResponse();
+                        context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                        context.Response.ContentType = "application/json";
+                        var result = System.Text.Json.JsonSerializer.Serialize(new { message = "Unauthorized" });
+                        return context.Response.WriteAsync(result);
+                    }
+                };*/
+            });
 
+            // 4. Cấu hình CORS
+            services.AddCors(options =>
+            {
+                options.AddPolicy("AllowAll", policy =>
+                {
+                    policy.AllowAnyOrigin()
+                          .AllowAnyMethod()
+                          .AllowAnyHeader();
                 });
+            });
 
-            // cấu hình swagger
+            // 5. Cấu hình Authorization
+            services.AddAuthorization();
+
+            // 6. Cấu hình Swagger
             services.AddEndpointsApiExplorer();
             services.AddSwaggerGen(options =>
             {
@@ -85,45 +110,33 @@ namespace UserServiceRegistry
                     Url = "https://localhost:7198"
                 });
                 // Thêm cấu hình JWT vào Swagger
-                options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+                var jwtSecuritiySchema = new OpenApiSecurityScheme
                 {
+                    BearerFormat = "JWT",
                     Description = "Nhập token vào ô bên dưới (không cần Bearer):",
                     Name = "Authorization",
                     In = ParameterLocation.Header,
                     Type = SecuritySchemeType.Http,
-                    Scheme = "bearer",
-                    BearerFormat = "JWT"
-                });
+                    Scheme = JwtBearerDefaults.AuthenticationScheme,
+                    Reference = new OpenApiReference
+                    {
+                        Type = ReferenceType.SecurityScheme,
+                        Id = JwtBearerDefaults.AuthenticationScheme
+                    }
+                };
+                options.AddSecurityDefinition("Bearer", jwtSecuritiySchema);
                 options.AddSecurityRequirement(new OpenApiSecurityRequirement
                 {
                     {
-                        new OpenApiSecurityScheme
-                        {
-                            Reference = new OpenApiReference
-                            {
-                                Type = ReferenceType.SecurityScheme,
-                                Id = "Bearer"
-                            }
-                        },
+                        jwtSecuritiySchema,
                         new List<string>()
                     }
                 });
             });
-
-            var allowedOrigins = configuration.GetSection("Cors:AllowedOrigins").Get<string[]>();
-
-            services.AddCors(options =>
-            {
-                options.AddPolicy("MyCorsPolicy", builder =>
-                {
-                    builder.WithOrigins(allowedOrigins)
-                           .AllowAnyHeader()
-                           .AllowAnyMethod()
-                           .AllowCredentials();
-                });
-            });
+            services.AddControllers();
 
             return services;
         }
+
     }
 }

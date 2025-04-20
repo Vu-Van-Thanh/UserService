@@ -1,16 +1,11 @@
 ﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
-using System;
 using System.IdentityModel.Tokens.Jwt;
-using System.Linq;
 using System.Security.Claims;
 using System.Text;
-using System.Threading.Tasks;
 using UserService.Core.Domain.IdentityEntities;
 using UserService.Core.DTO;
 using UserService.Core.Services;
@@ -19,6 +14,7 @@ namespace UserService.API.Controllers
 {
     [Route("[controller]")]
     [ApiController]
+    [Authorize]
     public class AuthController : ControllerBase
     {
         private readonly UserManager<ApplicationUser> _userManager;
@@ -33,8 +29,8 @@ namespace UserService.API.Controllers
             _configuration = configuration;
             _tokenService = tokenService;
         }
-
-        [HttpPost("register")] // POST /api/auth/register
+        [AllowAnonymous]
+        [HttpPost("register")] 
         public async Task<IActionResult> Register([FromBody] RegisterRequest model)
         {
             if (!ModelState.IsValid)
@@ -59,8 +55,8 @@ namespace UserService.API.Controllers
             var token = _tokenService.GenerateJwtToken(user);
             return Ok(new { accessToken = token, refresh_token = user.RefreshToken });
         }
-
-        [HttpPost("login")] // POST /api/auth/login
+        [AllowAnonymous]
+        [HttpPost("login")] 
         public async Task<IActionResult> Login([FromBody] LoginRequest model)
         {
             var user = await _userManager.FindByEmailAsync(model.Email);
@@ -84,7 +80,7 @@ namespace UserService.API.Controllers
             });
         }
 
-        [HttpPost("tokens")] // POST /api/auth/tokens
+        [HttpPost("tokens")] 
         public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenRequest request)
         {
             if (request is null || string.IsNullOrEmpty(request.RefreshToken))
@@ -112,15 +108,50 @@ namespace UserService.API.Controllers
             });
         }
 
+        [HttpPost("validate")]
+        [AllowAnonymous]
+        public IActionResult ValidateJwt([FromBody] string token)
+        {
+            var key = Encoding.UTF8.GetBytes(_configuration["JwtSettings:Secret"]);
+            var tokenHandler = new JwtSecurityTokenHandler();
 
-        [Authorize]
-        [HttpPost("change-password")] // POST /api/auth/change-password
+            try
+            {
+                // Xác thực JWT
+                var validationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidateLifetime = true,
+                    ValidateIssuerSigningKey = true,
+                    ValidIssuer = "UserService",
+                    ValidAudience = "HRM_User",
+                    IssuerSigningKey = new SymmetricSecurityKey(key)
+                };
+
+                // Thực hiện xác thực token
+                tokenHandler.ValidateToken(token, validationParameters, out var validatedToken);
+
+                return Ok(new { message = "JWT is valid" }); 
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = "Invalid JWT", error = ex.Message }); 
+            }
+        }
+        [HttpPost("change-password")] 
         public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequest model)
         {
+            var debugClaims = User.Claims.Select(c => new { c.Type, c.Value }).ToList();
+            Console.WriteLine("===> Claims:");
+            foreach (var claim in debugClaims)
+            {
+                Console.WriteLine($"Claim: {claim.Type} = {claim.Value}");
+            }
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier); // Lấy ID của user từ token
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier); 
             var user = await _userManager.FindByIdAsync(userId);
 
             if (user == null)
@@ -146,9 +177,5 @@ namespace UserService.API.Controllers
                 message = "Password changed successfully"
             });
         }
-
-
     }
-
-
 }

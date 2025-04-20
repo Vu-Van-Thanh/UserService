@@ -20,7 +20,6 @@ builder.Services.AddSingleton<IConsulClient, ConsulClient>(p => new ConsulClient
 {
     cfg.Address = new Uri(consulConfig.ConsulAddress);
 }));
-builder.Services.AddControllers();
 
 var app = builder.Build();
 //đăng kí consul
@@ -61,11 +60,11 @@ if (app.Environment.IsDevelopment())
     });
 }
 
-app.UseCors("MyCorsPolicy");
+app.UseCors("AllowAll");
 app.UseHttpsRedirection();
-app.UseAuthentication();
-app.UseAuthorization();
-
+app.UseRouting();              // ✅ Phân tích route từ URL
+app.UseAuthentication();      // ✅ Kiểm tra token (JWT)
+app.UseAuthorization();       // ✅ Áp chính sách [Authorize]
 app.MapControllers();
 
 app.Run();
