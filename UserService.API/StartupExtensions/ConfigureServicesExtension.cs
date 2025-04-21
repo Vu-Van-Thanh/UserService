@@ -40,8 +40,8 @@ namespace UserServiceRegistry
 
             // 3. Cấu hình JWT Authentication
             var jwtSettings = configuration.GetSection("JwtSettings");
-            //var secretKey = Encoding.UTF8.GetBytes(configuration["JwtSettings:Secret"]);
-            var secretKey = Encoding.UTF8.GetBytes("VUVANTHANH2K3_DOANTOTNGHIEP_2025");
+            var secretKey = Encoding.UTF8.GetBytes(configuration["JwtSettings:Secret"]);
+            //var secretKey = Encoding.UTF8.GetBytes("VUVANTHANH2K3_DOANTOTNGHIEP_2025");
 
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             .AddJwtBearer(options =>
@@ -50,10 +50,10 @@ namespace UserServiceRegistry
                 options.SaveToken = true;
                 options.TokenValidationParameters = new TokenValidationParameters
                 {
-                    //ValidIssuer = jwtSettings["Issuer"],
-                    ValidIssuer= "https://localhost:7198/",
-                    //ValidAudience = jwtSettings["Audience"],
-                    ValidAudience= "https://localhost:7198/",
+                    ValidIssuer = jwtSettings["Issuer"],
+                    //ValidIssuer= "https://localhost:7198/",
+                    ValidAudience = jwtSettings["Audience"],
+                    //ValidAudience= "https://localhost:7198/",
                     ValidateIssuer = true,
                     ValidateAudience = true,
                     ValidateLifetime = true,

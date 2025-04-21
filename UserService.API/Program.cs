@@ -23,7 +23,6 @@ builder.Services.AddSingleton<IConsulClient, ConsulClient>(p => new ConsulClient
 }));
 
 var app = builder.Build();
-//app.UseMiddleware<TokenProcessingMiddleware>();
 
 //đăng kí consul
 var lifetime = app.Lifetime;
@@ -83,6 +82,8 @@ app.Use(async (context, next) =>
     await next(); // Đừng quên gọi middleware tiếp theo
 });
 app.UseAuthentication();      // ✅ Kiểm tra token (JWT)
+
+app.UseAuthorization();       // ✅ Áp chính sách [Authorize]
 app.Use(async (context, next) =>
 {
     var user = context.User;
@@ -91,7 +92,6 @@ app.Use(async (context, next) =>
 
     await next();
 });
-app.UseAuthorization();       // ✅ Áp chính sách [Authorize]
 app.MapControllers();
 
 app.Run();
