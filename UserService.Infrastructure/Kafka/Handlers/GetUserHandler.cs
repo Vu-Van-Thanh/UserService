@@ -23,26 +23,35 @@ namespace UserService.Infrastructure.Kafka.Handlers
         }
         public async Task HandleAsync(KafkaRequest<UserInfoRequestDTO> message)
         {
-            if (!Guid.TryParse(message.Filter.AccountId, out Guid accountId))
-            {
-                // Handle lỗi parse GUID, có thể throw hoặc return
-                throw new ArgumentException("Invalid AccountId format");
-            }
+            var accountIds = message.Filter.AccountId
+                             .Split(',')
+                             .Select(id => Guid.TryParse(id.Trim(), out Guid accountId) ? accountId : (Guid?)null)
+                             .Where(id => id.HasValue)
+                             .Select(id => id.Value)
+                             .ToList();
 
-            var user = await _userManager.Users
-                            .FirstOrDefaultAsync(u => u.Id == accountId);
-            KafkaResponse<UserInfo> response = new KafkaResponse<UserInfo>            {
+            if (!accountIds.Any())
+            {
+                // Nếu không có AccountId hợp lệ, có thể throw hoặc return
+                throw new ArgumentException("No valid AccountId found in the input");
+            }
+            var users = await _userManager.Users
+                                   .Where(u => accountIds.Contains(u.Id))
+                                   .ToListAsync();
+            var userInfos = users.Select(user => new UserInfo
+            {
+                AccountId = user.Id.ToString(),
+                UserName = user.UserName ?? string.Empty,
+                Email = user.Email ?? string.Empty,
+                PhoneNumber = user.PhoneNumber ?? string.Empty,
+                IsActive = user.IsActive
+            }).ToList();
+            var response = new KafkaResponse<List<UserInfo>>
+            {
                 RequestType = message.RequestType,
                 Timestamp = DateTime.UtcNow,
                 CorrelationId = message.CorrelationId,
-                Filter = new UserInfo { 
-                    AccountId = user?.Id.ToString() ?? string.Empty, 
-                    UserName = user?.UserName ?? string.Empty,
-                    Email = user?.Email ?? string.Empty,
-                    PhoneNumber = user?.PhoneNumber ?? string.Empty,
-                    IsActive = user?.IsActive ?? false
-                }
-               
+                Filter = userInfos
             };
             await _eventProducer.PublishAsync("User-Info", null, null, response);
 
