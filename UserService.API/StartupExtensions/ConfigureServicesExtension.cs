@@ -8,6 +8,11 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using UserService.Core.Services;
+using UserService.Core.DTO;
+using UserService.Infrastructure.Kafka.Handlers;
+using UserService.API.Kafka.Producer;
+using UserService.Infrastructure.Kafka;
+using UserService.Infrastructure.Kafka.Consumers;
 
 namespace UserServiceRegistry
 {
@@ -38,6 +43,10 @@ namespace UserServiceRegistry
             .AddUserStore<UserStore<ApplicationUser, ApplicationRole, ApplicationDbContext, Guid>>()
             .AddRoleStore<RoleStore<ApplicationRole, ApplicationDbContext, Guid>>();
 
+            services.AddScoped<IKafkaHandler<KafkaRequest<UserInfoRequestDTO>>, GetUserHandler>();
+            services.AddScoped<IEventProducer, UserProducer>();
+            services.Configure<KafkaSettings>(configuration.GetSection("Kafka"));
+            services.AddHostedService<UserConsumer>();
             // 3. Cấu hình JWT Authentication
             var jwtSettings = configuration.GetSection("JwtSettings");
             var secretKey = Encoding.UTF8.GetBytes(configuration["JwtSettings:Secret"]);
