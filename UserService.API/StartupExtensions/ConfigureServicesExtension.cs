@@ -44,6 +44,7 @@ namespace UserServiceRegistry
             .AddRoleStore<RoleStore<ApplicationRole, ApplicationDbContext, Guid>>();
 
             services.AddScoped<IKafkaHandler<KafkaRequest<UserInfoRequestDTO>>, GetUserHandler>();
+            services.AddScoped<IKafkaHandler<KafkaRequest<AccountCreateRequest>>, CreateAccountHandler>();
             services.AddScoped<IEventProducer, UserProducer>();
             services.Configure<KafkaSettings>(configuration.GetSection("Kafka"));
             services.AddHostedService<UserConsumer>();

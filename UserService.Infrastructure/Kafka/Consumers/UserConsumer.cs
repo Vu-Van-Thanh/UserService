@@ -18,18 +18,7 @@ namespace UserService.Infrastructure.Kafka.Consumers
         public UserConsumer(IConfiguration config, IServiceProvider serviceProvider, IOptions<KafkaSettings> kafkaOptions)
         {
             _kafkaSettings = kafkaOptions.Value;
-            /*ConsumerConfig consumerConfig = new ConsumerConfig
-            {
-                BootstrapServers = _kafkaSettings?.BootstrapServers,
-                GroupId = _kafkaSettings?.GroupId,
-                AutoOffsetReset = AutoOffsetReset.Earliest
-            };
-            List<string> allTopics = _kafkaSettings.ConsumeTopicNames
-                            .SelectMany(entry => entry.Value)
-                            .Distinct()
-                            .ToList();
-            _consumer = new ConsumerBuilder<string, string>(consumerConfig).Build();
-            _consumer.Subscribe(allTopics);*/
+
             try
             {
                 ConsumerConfig consumerConfig = new ConsumerConfig
@@ -74,11 +63,14 @@ namespace UserService.Infrastructure.Kafka.Consumers
                         Console.WriteLine("Receive : {0}", message);
                         var filterHandler = scope.ServiceProvider.GetRequiredService<IKafkaHandler<KafkaRequest<UserInfoRequestDTO>>>();
                         var filterData = JsonSerializer.Deserialize<KafkaRequest<UserInfoRequestDTO>>(message);
-                       
-
                         await filterHandler.HandleAsync(filterData);
                         break;
-                        // thêm các topic khác nếu cần
+                    case "account-create":
+                        Console.WriteLine("Receive : {0}", message);
+                        var accountHandler = scope.ServiceProvider.GetRequiredService<IKafkaHandler<KafkaRequest<AccountCreateRequest>>>();
+                        var accountData = JsonSerializer.Deserialize<KafkaRequest<AccountCreateRequest>>(message);
+                        await accountHandler.HandleAsync(accountData);
+                        break;
                 }
             }
         }
