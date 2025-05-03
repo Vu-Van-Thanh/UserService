@@ -3,6 +3,9 @@
 using EmployeeService.Infrastructure.Kafka.KafkaEntity;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using System.Globalization;
+using System.Text.RegularExpressions;
+using System.Text;
 using UserService.API.Kafka.Producer;
 using UserService.Core.Domain.IdentityEntities;
 using UserService.Core.DTO;
@@ -30,13 +33,13 @@ namespace UserService.Infrastructure.Kafka.Handlers
 
             var user = new ApplicationUser
             {
-                UserName = request.Username,
+                UserName = ToValidUsername(request.Username),
                 Email = email,
                 EmailConfirmed = true // nên xác nhận luôn nếu từ hệ thống nội bộ
             };
 
             // Tạo user với mật khẩu mặc định là username viết thường (nên đổi nếu có yêu cầu bảo mật)
-            var result = await _userManager.CreateAsync(user, request.Username.ToLower());
+            var result = await _userManager.CreateAsync(user, "HRM1!" + request.Username.ToLower());
 
             if (result.Succeeded)
             {
@@ -67,6 +70,7 @@ namespace UserService.Infrastructure.Kafka.Handlers
 
         private async Task<string> GenerateUniqueEmailAsync(string username)
         {
+            username = ToValidUsername(username);
             string domain = "hrm.tv.com";
             string baseEmail = $"{username}@{domain}";
             if (!await _userManager.Users.AnyAsync(u => u.Email == baseEmail))
@@ -96,6 +100,29 @@ namespace UserService.Infrastructure.Kafka.Handlers
 
             // Cuối cùng, dùng GUID đầy đủ
             return $"{username}.{Guid.NewGuid().ToString("N")[..8]}@{domain}";
+        }
+        public string ToValidUsername(string input)
+        {
+            // 1. Loại bỏ dấu tiếng Việt
+            string normalized = input.Normalize(NormalizationForm.FormD);
+            var sb = new StringBuilder();
+            foreach (var ch in normalized)
+            {
+                var unicodeCategory = CharUnicodeInfo.GetUnicodeCategory(ch);
+                if (unicodeCategory != UnicodeCategory.NonSpacingMark)
+                {
+                    sb.Append(ch);
+                }
+            }
+            string noDiacritics = sb.ToString().Normalize(NormalizationForm.FormC);
+
+            // 2. Chuyển thành chữ thường
+            string lower = noDiacritics.ToLowerInvariant();
+
+            // 3. Loại bỏ ký tự đặc biệt, chỉ giữ chữ cái, số và dấu chấm nếu cần
+            string cleaned = Regex.Replace(lower, @"[^a-z0-9]", "");
+
+            return cleaned;
         }
 
     }

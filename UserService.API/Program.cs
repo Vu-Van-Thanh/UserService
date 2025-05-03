@@ -47,10 +47,10 @@ var registration = new AgentServiceRegistration()
 //await consulClient.Agent.ServiceRegister(registration);
 
 // Hủy đăng ký khi app stop
-lifetime.ApplicationStopping.Register(() =>
+/*lifetime.ApplicationStopping.Register(() =>
 {
     consulClient.Agent.ServiceDeregister(registration.ID).Wait();
-});
+});*/
 
 if (app.Environment.IsDevelopment())
 {
