@@ -32,8 +32,17 @@ namespace UserService.Infrastructure.Kafka.Handlers
 
             if (!accountIds.Any())
             {
-                // Nếu không có AccountId hợp lệ, có thể throw hoặc return
-                throw new ArgumentException("No valid AccountId found in the input");
+                var errorResponse = new KafkaResponse<List<UserInfo>>
+                {
+                    RequestType = message.RequestType,
+                    Timestamp = DateTime.UtcNow,
+                    CorrelationId = message.CorrelationId,
+                    Filter = new List<UserInfo>()  // Có thể để trống hoặc trả về thông báo lỗi ở đây
+                };
+
+                // Publish sự kiện lỗi (hoặc thông báo trống)
+                await _eventProducer.PublishAsync("User-Info", null, null, errorResponse);
+                return;
             }
             var users = await _userManager.Users
                                    .Where(u => accountIds.Contains(u.Id))

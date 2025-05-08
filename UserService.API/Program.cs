@@ -2,6 +2,8 @@
 using Consul;
 using UserService.API.StartupExtensions;
 using UserService.API.Middlewares;
+using UserService.Infrastructure.DbContext;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -93,5 +95,10 @@ app.Use(async (context, next) =>
     await next();
 });
 app.MapControllers();
+using (var scope = app.Services.CreateScope())
+{
+    var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    dbContext.Database.Migrate();
+}
 
 app.Run();
