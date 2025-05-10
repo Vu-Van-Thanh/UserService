@@ -47,7 +47,7 @@ namespace UserServiceRegistry
             services.AddScoped<IKafkaHandler<KafkaRequest<AccountCreateRequest>>, CreateAccountHandler>();
             services.AddScoped<IEventProducer, UserProducer>();
             services.Configure<KafkaSettings>(configuration.GetSection("Kafka"));
-            //services.AddHostedService<UserConsumer>();
+            services.AddHostedService<UserConsumer>();
             // 3. Cấu hình JWT Authentication
             var jwtSettings = configuration.GetSection("JwtSettings");
             var secretKey = Encoding.UTF8.GetBytes(configuration["JwtSettings:Secret"]);
