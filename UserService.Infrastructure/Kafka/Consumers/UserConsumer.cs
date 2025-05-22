@@ -47,7 +47,7 @@ namespace UserService.Infrastructure.Kafka.Consumers
             _serviceProvider = serviceProvider;
             _serviceProvider = serviceProvider;
         }
-        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+        /*protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             while (!stoppingToken.IsCancellationRequested)
             {
@@ -73,7 +73,53 @@ namespace UserService.Infrastructure.Kafka.Consumers
                         break;
                 }
             }
+        }*/
+        protected override Task ExecuteAsync(CancellationToken stoppingToken)
+        {
+            // Tách logic consume ra 1 thread riêng
+            Task.Run(async () =>
+            {
+                while (!stoppingToken.IsCancellationRequested)
+                {
+                    try
+                    {
+                        var result = _consumer.Consume(stoppingToken);
+                        var topic = result.Topic;
+                        var message = result.Message.Value;
+
+                        using var scope = _serviceProvider.CreateScope();
+
+                        switch (topic)
+                        {
+                            case "get-all-user":
+                                Console.WriteLine("Receive : {0}", message);
+                                var filterHandler = scope.ServiceProvider.GetRequiredService<IKafkaHandler<KafkaRequest<UserInfoRequestDTO>>>();
+                                var filterData = JsonSerializer.Deserialize<KafkaRequest<UserInfoRequestDTO>>(message);
+                                await filterHandler.HandleAsync(filterData);
+                                break;
+
+                            case "account-create":
+                                Console.WriteLine("Receive : {0}", message);
+                                var accountHandler = scope.ServiceProvider.GetRequiredService<IKafkaHandler<KafkaRequest<AccountCreateRequest>>>();
+                                var accountData = JsonSerializer.Deserialize<KafkaRequest<AccountCreateRequest>>(message);
+                                await accountHandler.HandleAsync(accountData);
+                                break;
+                        }
+                    }
+                    catch (ConsumeException ex)
+                    {
+                        Console.WriteLine($"Kafka consume error: {ex.Error.Reason}");
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"General error in UserConsumer: {ex.Message}");
+                    }
+                }
+            }, stoppingToken);
+
+            return Task.CompletedTask;
         }
+
 
         public override Task StopAsync(CancellationToken cancellationToken)
         {

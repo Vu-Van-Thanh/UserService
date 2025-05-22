@@ -53,7 +53,8 @@ namespace UserService.Infrastructure.Kafka.Handlers
                 UserName = user.UserName ?? string.Empty,
                 Email = user.Email ?? string.Empty,
                 PhoneNumber = user.PhoneNumber ?? string.Empty,
-                IsActive = user.IsActive
+                IsActive = user.IsActive,
+                Avartar = user.AvatarUrl
             }).ToList();
             var response = new KafkaResponse<List<UserInfo>>
             {
