@@ -1,36 +1,31 @@
-version: '3.8'
-
 services:
-  userservice.api:
-    container_name: userservice.api
-    build:
-      context: .
-      dockerfile: UserService.API/Dockerfile
-    ports:
-      - "5001:5231"
+  db:
+    image: mcr.microsoft.com/mssql/server:2019-latest
+    container_name: user-db
     environment:
-      - ASPNETCORE_ENVIRONMENT=Development
-      - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=UserDb;User=sa;Password=Thanh2k3!;
-    depends_on:
-      - sqlserver
-    networks:
-      - userservice-network
-
-  sqlserver:
-    container_name: userservice.db
-    image: mcr.microsoft.com/mssql/server:2022-latest
-    environment:
-      SA_PASSWORD: "Thanh2k3!"
+      SA_PASSWORD: "Your!StrongP@ssw0rd"
       ACCEPT_EULA: "Y"
     ports:
       - "1433:1433"
-    volumes:
-      - sql_data:/var/opt/mssql
-    networks:
-      - userservice-network
+    # Tắt healthcheck
+    healthcheck:
+      disable: true
 
-networks:
-  userservice-network:
-
-volumes:
-  sql_data:
+  api:
+    build:
+      context: .                        
+      dockerfile: UserService.API/Dockerfile
+    container_name: user-api
+    depends_on:
+      db:
+        condition: service_started
+    environment:
+      ConnectionStrings__DefaultConnection: > 
+        Server=db;
+        Database=UserDb;
+        User Id=sa;
+        Password=Your!StrongP@ssw0rd;
+      ASPNETCORE_ENVIRONMENT: "Production"
+    ports:
+      - "5000:80"
+    restart: on-failure
