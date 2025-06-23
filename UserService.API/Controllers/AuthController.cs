@@ -178,5 +178,59 @@ namespace UserService.API.Controllers
                 message = "Password changed successfully"
             });
         }
+
+        [HttpPut("profile")]
+        [AllowAnonymous]
+        public async Task<IActionResult> UpdateProfile([FromForm] UpdateUserProfileRequest model )
+        {
+            var user = await _userManager.FindByEmailAsync(model.email);
+            if (user == null)
+                return Unauthorized("User not found");
+
+            // Cập nhật Email và Phone nếu được gửi lên
+            if (!string.IsNullOrWhiteSpace(model.email))
+                user.Email = model.email;
+
+            if (!string.IsNullOrWhiteSpace(model.phone))
+                user.PhoneNumber = model.phone;
+
+            
+            if (model.avatar != null && model.avatar.Length > 0)
+            {
+                var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "AvatarUser");
+                if (!Directory.Exists(uploadsFolder))
+                    Directory.CreateDirectory(uploadsFolder);
+
+                var fileName = $"{Guid.NewGuid()}{Path.GetExtension(model.avatar.FileName)}";
+                var filePath = Path.Combine(uploadsFolder, fileName);
+
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    await model.avatar.CopyToAsync(stream);
+                }
+
+                var relativePath = $"/AvatarUser/{fileName}";
+                user.AvatarUrl = relativePath;
+            }
+
+            var result = await _userManager.UpdateAsync(user);
+            if (!result.Succeeded)
+                return BadRequest(result.Errors);
+
+            return Ok(new
+            {
+                message = "Cập nhật thông tin người dùng thành công",
+                user = new
+                {
+                    id = user.Id,
+                    email = user.Email,
+                    phone = user.PhoneNumber,
+                    avatar = user.AvatarUrl,
+                    fullName = user.FullName
+                }
+            });
+        }
+
+
     }
 }

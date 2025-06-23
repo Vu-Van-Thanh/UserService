@@ -54,7 +54,8 @@ namespace UserService.Infrastructure.Kafka.Handlers
                 Email = user.Email ?? string.Empty,
                 PhoneNumber = user.PhoneNumber ?? string.Empty,
                 IsActive = user.IsActive,
-                Avartar = user.AvatarUrl
+                Avartar = "https://localhost:7198" + user.AvatarUrl,
+                CreatedAt = user.CreatedAt.ToString()
             }).ToList();
             var response = new KafkaResponse<List<UserInfo>>
             {

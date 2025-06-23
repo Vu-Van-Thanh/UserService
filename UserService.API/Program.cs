@@ -65,6 +65,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseCors("AllowAll");
+app.UseStaticFiles();
 app.UseHttpsRedirection();
 app.UseRouting();              // ✅ Phân tích route từ URL
 // Debug middleware để log request và header
