@@ -39,9 +39,7 @@ namespace UserService.Infrastructure.Kafka.Consumers
             }
             catch (Exception ex)
             {
-                // Log lỗi nếu không thể khởi tạo hoặc subscribe Kafka consumer
                 Console.WriteLine($"Lỗi khi khởi tạo Kafka consumer: {ex.Message}");
-                throw; // Ném lại exception nếu không thể tiếp tục khởi tạo
             }
 
             _serviceProvider = serviceProvider;

@@ -1,22 +1,26 @@
-FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
-WORKDIR /app
-EXPOSE 5231
-
-
+# --- 1) Build & publish ---
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
-COPY ["UserService.API/UserService.API.csproj", "UserService.API/"]
-COPY ["UserService.Core/UserService.Core.csproj", "UserService.Core/"]
-COPY ["UserService.Infrastructure/UserService.Infrastructure.csproj", "UserService.Infrastructure/"]
-RUN dotnet restore "UserService.API/UserService.API.csproj"
+
+# 1.1) Copy tất cả code vào context
 COPY . .
-WORKDIR "/src/UserService.API"
-RUN dotnet build "UserService.API.csproj" -c Release -o /app/build
 
-FROM build AS publish
-RUN dotnet publish "UserService.API.csproj" -c Release -o /app/publish /p:UseAppHost=false
+# 1.2) Publish trực tiếp project API (bao gồm restore tự động)
+RUN dotnet publish \
+      UserService.API/UserService.API.csproj \
+      -c Release \
+      -o /app/publish
 
-FROM base AS final
+# --- 2) Runtime ---
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
 WORKDIR /app
-COPY --from=publish /app/publish .
-ENTRYPOINT ["dotnet", "UserService.API.dll"] 
+
+# 2.1) Copy bản build đã publish
+COPY --from=build /app/publish .
+
+# 2.2) Môi trường & port (tuỳ bạn)
+ENV ASPNETCORE_URLS=http://+:80
+EXPOSE 80
+
+# 2.3) Chạy API
+ENTRYPOINT ["dotnet", "UserService.API.dll"]

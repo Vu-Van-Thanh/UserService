@@ -52,13 +52,21 @@ namespace UserService.Infrastructure.DbContext
 
         private static List<T> LoadSeedData<T>(string filePath)
         {
-            string baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
-            string projectRoot = Directory.GetParent(baseDirectory).Parent.Parent.Parent.Parent.FullName;
-            string fullPath = Path.Combine(projectRoot, "UserService.Infrastructure", filePath);
+            // string baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
+            //string projectRoot = Directory.GetParent(baseDirectory).Parent.Parent.Parent.Parent.FullName;
+            var basePath = AppDomain.CurrentDomain.BaseDirectory;
+            var fullPath = Path.Combine(basePath, filePath);
 
 
+            // string fullPath = Path.Combine(projectRoot, "UserService.Infrastructure", filePath);
             if (!File.Exists(fullPath))
-                throw new FileNotFoundException($"Không tìm thấy file seed data: {fullPath}");
+            {
+                Console.WriteLine($"⚠️ File seed data không tồn tại: {fullPath}");
+                return new List<T>();
+            }
+
+            /*if (!File.Exists(fullPath))
+                throw new FileNotFoundException($"Không tìm thấy file seed data: {fullPath}");*/
 
             var jsonData = File.ReadAllText(fullPath);
             var items = JsonSerializer.Deserialize<List<T>>(jsonData) ?? new List<T>();
